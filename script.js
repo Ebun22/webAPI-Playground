@@ -143,6 +143,19 @@ const colorChange = (color) => {
     }   
 }
 
+const getDevices = async () => {
+    const audioInput = document.querySelector('#audio-input')
+    const audioOutput = document.querySelector('#audio-output')
+    const videoInput = document.querySelector('#video-input')
+
+    try{
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        console.log(devices)
+    }catch(err){
+        console.log("couldn't get input and output devices")
+    }
+}
+getDevices()
 document.querySelector('#share').addEventListener('click', getMicAndCamera)
 document.querySelector('#show-video').addEventListener('click', startVideo);
 document.querySelector('#stop-video').addEventListener('click', stopVideo);
