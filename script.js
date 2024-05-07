@@ -7,6 +7,9 @@ let blob = [];
 let mediaRecorder;
 let superBlob
 let videoUrl;
+let mediaStream;
+let divEl =  document.querySelector('#cont-other-feed');
+let downloadEl = document.createElement('a');
 
 const getMicAndCamera = async () => {
     const constraints = {
@@ -79,25 +82,56 @@ const stopRecording = () => {
     if(!mediaRecorder) return;
     console.log("Recording has stopped");
     mediaRecorder.stop();
+    setTimeout(() => {
+        divEl.removeChild(downloadEl)
+    }, 200)
     colorChange([green, green, blue, blue, blue, green, blue, blue])
 }
 
 const playRecording = () => {
     if(!blob) return;
     console.log("Recording played");
-    superBlob = new Blob(blob);
+    superBlob = new Blob(blob, {
+        type: "video/webm"
+    });
     videoUrl = window.URL.createObjectURL(superBlob);
     const recorderVid = document.querySelector('#other-video');
     console.log(recorderVid)
     recorderVid.src = videoUrl;
     recorderVid.controls = true;
     recorderVid.play();
+    save()
     colorChange([green, green, blue, blue, blue, grey, green, blue])
 }
 
-const shareScreen = () => {
-    console.log("share screen is working")
+const save = () => {
+    downloadEl.style.display = 'block'; // Make the anchor tag visible
+    downloadEl.style.color = 'blue';
+    downloadEl.textContent = 'Download';
+    downloadEl.href = videoUrl;
+    divEl.appendChild(downloadEl);
+
+    downloadEl.addEventListener('click', () => {
+        const clipName = prompt("Enter name of video");
+        downloadEl.download = `${clipName}.webm`;
+        console.log("video has been downloaded");
+    });
 }
+
+const shareScreen = async () => {
+    console.log("share screen is working");
+    const options = {
+        video: true,
+        audio: false,
+        surfaceSwitching: 'include'
+    }
+    try{
+        mediaStream = await navigator.mediaDevices.getDisplayMedia(options)
+    }catch(err){
+        console.log("The promise was rejected: ", err)
+    }
+    colorChange([green, green, blue, blue, blue, grey, grey, green])
+};
 
 const colorChange = (color) => {
     const buttons = ["share","show-video", "stop-video","change-size", "start-record","stop-record","play-record","share-screen"]
