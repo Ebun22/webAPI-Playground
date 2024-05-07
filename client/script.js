@@ -9,6 +9,9 @@ let superBlob
 let videoUrl;
 let mediaStream;
 let divEl =  document.querySelector('#cont-other-feed');
+let audioInput = document.querySelector('#audio-input')
+let audioOutput = document.querySelector('#audio-output')
+let videoInput = document.querySelector('#video-input')
 let downloadEl = document.createElement('a');
 
 const getMicAndCamera = async () => {
@@ -144,18 +147,73 @@ const colorChange = (color) => {
 }
 
 const getDevices = async () => {
-    const audioInput = document.querySelector('#audio-input')
-    const audioOutput = document.querySelector('#audio-output')
-    const videoInput = document.querySelector('#video-input')
 
     try{
         const devices = await navigator.mediaDevices.enumerateDevices()
+        devices.forEach(device => {
+            const option = document.createElement("option");
+            option.value = device.deviceId;
+            option.label = device.label;
+
+            if(device.kind == "audioinput"){
+                audioInput.appendChild(option)
+            } else if(device.kind == "audiooutput"){
+                audioOutput.appendChild(option)
+            } else if(device.kind == "videoinput"){
+                videoInput.appendChild(option)
+            }
+        })
         console.log(devices)
     }catch(err){
         console.log("couldn't get input and output devices")
     }
 }
+
+const changeVideo = async (event) => {
+    console.log("changed")
+    const deviceId = event.target.value;
+    const newConstraints = {
+        audio: true,
+        video: {deviceId: {exact: deviceId}}
+    }
+
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia(newConstraints);
+        const tracks = stream.getVideoTracks();
+        tracks.forEach( track => {
+            console.log(track)
+        })
+    }catch(err){
+        console.log("Error changing video stream: ", err)
+    }
+}
+
+const changeAudioInput = async (event) => {
+    console.log("changed")
+    const deviceId = event.target.value;
+    const newConstraints = {
+        audio: {deviceId: {exact: deviceId}},
+        video: true
+    }
+
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia(newConstraints);
+        const tracks = stream.getAudioTracks();
+        tracks.forEach( track => {
+            console.log(track)
+        })
+    }catch(err){
+        console.log("Error changing video stream: ", err)
+    }
+}
+
+const changeAudioOutput = () => {
+    
+}
 getDevices()
+videoInput.addEventListener('change', changeVideo);
+audioInput.addEventListener('change', changeAudioInput);
+audioOutput.addEventListener('change', changeAudioOutput);
 document.querySelector('#share').addEventListener('click', getMicAndCamera)
 document.querySelector('#show-video').addEventListener('click', startVideo);
 document.querySelector('#stop-video').addEventListener('click', stopVideo);
